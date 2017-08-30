@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Index</title>
+    <script src="http://code.jquery.com/jquery-latest.min.js "></script>
+    <script type="text/javascript">
+         <!--
+            
+            function search() {
+              var el = document.getElementById("search").value
+              var mod = el.split(" ").join("+");
+              $.get("/youtube/"+mod, function(data){
+              document.getElementById("results").innerHTML= data["data"];
+            });
+	    }
+         //-->
+      </script>
+</head> 
+<body>
+    <input id="search" type="text" >
+    <button type="button" onclick="search()">Search</button>
+    <div id="embedded"></div>
+    <div id="results"></div>
+</body>
+</html>
