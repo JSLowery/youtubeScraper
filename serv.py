@@ -3,32 +3,27 @@ import requests
 import time
 from bs4 import BeautifulSoup, SoupStrainer
 from multiprocessing.dummy import Pool
-def worker(i):
-    r = None
-    try:
-        r = requests.get('http://www.google.com')
-    except Exception as e:
-        print(e)
-    if (r==None):
-        r = 'no'
-        return ('<p>no</p>')
-    else:
-        print(r.status_code+i)
-        return ('<p>'+str(r.status_code+i)+'</p>') 
 @get("/youtube/<search>")
 def youtube(search):
     ret = []
     div = []
     try:
         time1 = time.time()
-        #http = urllib3.PoolManager()
-        #sauce = http.request('GET','https://youtube.com/results?search_query='+search)
-        print("time to urllib: " + str(time.time()-time1))
+        print("time to request: " + str(time.time()-time1))
         r = requests.Session()
         sauce = r.get('https://youtube.com/results?search_query='+search)
         time1 = time.time()
-        strainer = SoupStrainer("ol",attrs={'class':'item-section'})
+        strainer = SoupStrainer("div",attrs={'class':'yt-lockup-content'})
         soup = BeautifulSoup(sauce.text,'lxml', parse_only= strainer)
+        aList = soup.find_all('a')
+        for a in aList:
+            a['href']="javascript:call_get('"+a['href']+"')"
+        h3 = soup.find_all('h3')
+        for h in h3:
+          a = h.find('a')
+          if a.has_attr('data-url'):
+              if  'googleads' in  a['data-url']:
+                  _=a.extract()
         print("time to bs: " + str(time.time()-time1))
         #print(len(soup))
         #li = soup.find_all("li")
@@ -36,7 +31,7 @@ def youtube(search):
 
     except Exception as e:
         print(e)
-    tst = {"data":str(soup)}
+    tst = {"data":str(h3)}
     return (tst)
 @get("/watch")
 def watch():
@@ -44,19 +39,5 @@ def watch():
 @get("/")
 def redirect():
     return static_file ("index.html", root = "./html")
-@get('/root')
-def root():
-    tim = time.time()
-    p = Pool(32)
-    ret =p.map(worker, [i for i in range (32)])
-    p.close()
-    p.join()
-    tim2 = time.time()-tim
-    print('time to run was: ', tim2)
-    ret.append(str(tim2))
-    return (ret)
-@route('/hello/<name>')
-def index(name):
-    return template('<b>Hello {{name}}</b>!', name=name)
 
 run( host='0.0.0.0', port=48346, server=PasteServer)
